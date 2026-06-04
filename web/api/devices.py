@@ -4,6 +4,7 @@
 _device_pool 模块级字典存储所有设备实例，与 experiments runner 共享。
 """
 
+import logging
 from fastapi import APIRouter, HTTPException, Query
 from web.schemas import DeviceBrief
 from web.services.runner import get_available_device_configs
@@ -11,6 +12,114 @@ from web.services.runner import get_available_device_configs
 router = APIRouter(tags=["devices"])
 
 _device_pool: dict[str, object] = {}
+
+_log = logging.getLogger(__name__)
+
+
+def _ensure_device_pool(mode: str = ""):
+    """确保 _device_pool 中已根据 devices.yaml 创建了设备实例。
+
+    首次调用时依次尝试导入各设备驱动类并创建全部设备实例。
+    导入失败（如驱动未安装）的设备会被跳过，不会阻塞其它设备。
+    仅在 pool 为空时执行初始化，已存在则跳过。
+
+    Args:
+        mode: 实验模式。仅用于日志记录，不影响创建设备范围
+              （始终创建全部设备，由 list_devices 按需过滤）。
+    """
+    global _device_pool
+    if _device_pool:
+        return
+
+    try:
+        configs = get_available_device_configs()
+    except Exception:
+        _log.exception("加载 devices.yaml 失败")
+        return
+
+    for dev_name, dev_cfg in configs.items():
+        dev_type = dev_cfg.get("type", "")
+        try:
+            dev = _create_device_instance(dev_name, dev_type, dev_cfg)
+            if dev is not None:
+                _device_pool[dev_name] = dev
+                _log.info("设备实例已创建: %s (type=%s)", dev_name, dev_type)
+        except Exception:
+            _log.warning("创建设备实例失败: %s (type=%s), 已跳过", dev_name, dev_type,
+                         exc_info=True)
+
+
+def _create_device_instance(name: str, dev_type: str, cfg: dict):
+    """根据设备类型字符串创建对应的设备实例。
+
+    每个设备驱动模块在函数体内延迟导入，避免模块级 import
+    在驱动未安装时阻塞整个 API 模块的加载。
+
+    Returns:
+        设备实例，类型未知时返回 None
+    """
+    if dev_type == "thorlabs_rotator":
+        from devices.motor import ThorlabsRotator
+        return ThorlabsRotator(
+            name=name,
+            driver=cfg.get("driver", "Cage"),
+            serial=str(cfg.get("serial", "")),
+        )
+
+    if dev_type == "lightfield":
+        from devices.spectrometer import LightFieldSpectrometer
+        return LightFieldSpectrometer(
+            name=name,
+            experiment_name=cfg.get("experiment_name", ""),
+        )
+
+    if dev_type == "delay_stage":
+        from devices.delay_stage import DelayStage
+        return DelayStage(
+            name=name,
+            port=cfg.get("port", "COM4"),
+            baud=int(cfg.get("baud", 19200)),
+            controller=cfg.get("controller", "SMC"),
+            slave=int(cfg.get("slave", 0xCC)),
+            limit_isnegative=bool(cfg.get("limit_isnegative", True)),
+        )
+
+    if dev_type == "thorlabs_tlpm":
+        from devices.power_meter import ThorlabsPowerMeter
+        return ThorlabsPowerMeter(
+            name=name,
+            wavelength_nm=float(cfg.get("wavelength_nm", 532.0)),
+        )
+
+    if dev_type == "keyence_cl3":
+        from devices.distance_sensor import KeyenceDistanceSensor
+        return KeyenceDistanceSensor(
+            name=name,
+            device_id=int(cfg.get("device_id", 0)),
+            timeout=int(cfg.get("timeout", 10000)),
+        )
+
+    if dev_type == "vertical_stage":
+        from devices.vertical_stage import VerticalStage
+        return VerticalStage(
+            name=name,
+            port=cfg.get("port", "COM9"),
+            baud=int(cfg.get("baud", 9600)),
+        )
+
+    if dev_type == "smacq_ai":
+        from devices.daq_card import SmacqAICard
+        return SmacqAICard(
+            name=name,
+            device_id=int(cfg.get("device_id", 0)),
+            timeout=int(cfg.get("timeout", 1000)),
+            range_val=float(cfg.get("range_val", 5.0)),
+            sample_rate=int(cfg.get("sample_rate", 1000)),
+            channels=int(cfg.get("channels", 1)),
+        )
+
+    _log.warning("未知设备类型: %s (设备: %s)", dev_type, name)
+    return None
 
 
 def _get_mode_device_names(mode: str) -> set[str]:
@@ -72,6 +181,7 @@ def _extract_details(cfg: dict) -> dict:
 @router.get("/devices", response_model=list[DeviceBrief])
 async def list_devices(mode: str = Query(default="")):
     """获取设备状态列表。可选 mode 参数按实验模式过滤。"""
+    _ensure_device_pool(mode)
     try:
         configs = get_available_device_configs()
     except Exception as e:
@@ -112,6 +222,7 @@ async def connect_device(name: str):
     Args:
         name: 设备名称（如 vis_rotator）
     """
+    _ensure_device_pool()
     dev = _device_pool.get(name)
     if dev is None:
         raise HTTPException(status_code=404, detail=f"设备 '{name}' 不在设备池中")
@@ -152,6 +263,7 @@ async def disconnect_device(name: str):
 @router.post("/devices/connect-all")
 async def connect_all_devices():
     """连接设备池中所有设备。"""
+    _ensure_device_pool()
     errors: dict[str, str] = {}
     connected = 0
 

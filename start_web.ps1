@@ -1,5 +1,5 @@
 # SFG/SRS Web GUI one-click launcher
-param($Port = 8080)
+param($Port = 8081)
 
 Write-Host ""
 Write-Host "SFG/SRS Web GUI Control Panel" -ForegroundColor Cyan

@@ -2,7 +2,7 @@
  * SFG Web Control Panel - Device Panel Module (devices.js)
  *
  * 设备面板管理：设备列表刷新、渲染展示（含序列号/端口等详情）、
- * LightField 预设显示、批量连接/断开。
+ * LightField 预设显示、每个设备独立的连接/断开按钮。
  * 依赖 app.js 中的 state、api、addLog、getModeDevices、currentMode。
  */
 
@@ -27,7 +27,7 @@ async function refreshDevices() {
    Device Rendering
    ================================================================ */
 
-/** 渲染设备面板 — 全部使用 DOM 操作避免 innerHTML += 覆盖问题。 */
+/** 渲染设备面板 — 每个设备卡片带有独立的连接/断开按钮。 */
 function renderDevices() {
     var container = document.getElementById("device-list");
     if (!container) return;
@@ -54,7 +54,7 @@ function renderDevices() {
     if (!state.devices || state.devices.length === 0) {
         var emptyDiv = document.createElement("div");
         emptyDiv.style.cssText = "color:#999;padding:12px;text-align:center;font-size:13px;";
-        emptyDiv.textContent = "未检测到设备 — 请先点击「全部连接」";
+        emptyDiv.textContent = "未检测到设备";
         container.appendChild(emptyDiv);
         return;
     }
@@ -70,7 +70,7 @@ function renderDevices() {
         var card = document.createElement("div");
         card.className = "device-card" + (connected ? " connected" : "");
 
-        // 构建设备信息行
+        // 详细信息行
         var detailsHtml = "";
         if (d.details && Object.keys(d.details).length > 0) {
             var parts = [];
@@ -83,19 +83,72 @@ function renderDevices() {
         }
         var posText = (d.position !== null && d.position !== undefined) ? " 位置: " + d.position : "";
 
-        card.innerHTML =
-            '<div class="device-name">' +
-                '<span class="device-dot ' + (connected ? "on" : "off") + '"></span>' +
-                escapeHtml(d.name) +
-            '</div>' +
-            '<div class="device-info">' +
-                escapeHtml(d.type) + ' | ' + (connected ? '已连接' : '未连接') + posText +
-            '</div>' +
-            (detailsHtml ? '<div class="device-details">' + detailsHtml + '</div>' : '');
+        // 设备主体信息
+        var infoDiv = document.createElement("div");
+        infoDiv.className = "device-info-row";
+
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "device-name";
+        nameDiv.innerHTML = '<span class="device-dot ' + (connected ? "on" : "off") + '"></span>' + escapeHtml(d.name);
+        infoDiv.appendChild(nameDiv);
+
+        // 连接/断开按钮
+        var btn = document.createElement("button");
+        btn.className = "device-card-btn " + (connected ? "btn-disconnect" : "btn-connect");
+        btn.textContent = connected ? "断开" : "连接";
+        btn.dataset.deviceName = d.name;
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            toggleDevice(this.dataset.deviceName, !connected);
+        });
+        infoDiv.appendChild(btn);
+
+        card.appendChild(infoDiv);
+
+        // 类型与状态行
+        var infoLine = document.createElement("div");
+        infoLine.className = "device-info";
+        infoLine.innerHTML = escapeHtml(d.type) + ' | ' + (connected ? '已连接' : '未连接') + posText;
+        card.appendChild(infoLine);
+
+        // 详细信息行
+        if (detailsHtml) {
+            var detailsLine = document.createElement("div");
+            detailsLine.className = "device-details";
+            detailsLine.innerHTML = detailsHtml;
+            card.appendChild(detailsLine);
+        }
 
         container.appendChild(card);
     });
 }
+
+
+/* ================================================================
+   Device Toggle
+   ================================================================ */
+
+/**
+ * 切换单个设备的连接/断开状态。
+ *
+ * @param {string} name - 设备名称
+ * @param {boolean} connect - true 连接, false 断开
+ */
+async function toggleDevice(name, connect) {
+    var action = connect ? "connect" : "disconnect";
+    try {
+        await api("/api/devices/" + name + "/" + action, { method: "POST" });
+        addLog("info", "设备 " + name + " " + (connect ? "已连接" : "已断开"));
+        await refreshDevices();
+    } catch (e) {
+        addLog("error", name + " " + (connect ? "连接" : "断开") + "失败: " + e.message);
+    }
+}
+
+
+/* ================================================================
+   Utility
+   ================================================================ */
 
 /**
  * 基本 HTML 转义，防止 XSS。
@@ -108,36 +161,3 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
 }
-
-/* ================================================================
-   Button Bindings
-   ================================================================ */
-
-document.addEventListener("DOMContentLoaded", function () {
-    var btnConnectAll = document.getElementById("btn-connect-all");
-    var btnDisconnectAll = document.getElementById("btn-disconnect-all");
-
-    if (btnConnectAll) {
-        btnConnectAll.addEventListener("click", async function () {
-            try {
-                await api("/api/devices/connect-all", { method: "POST" });
-                addLog("info", "全部设备连接请求已发送");
-                await refreshDevices();
-            } catch (e) {
-                addLog("error", "全部连接失败: " + e.message);
-            }
-        });
-    }
-
-    if (btnDisconnectAll) {
-        btnDisconnectAll.addEventListener("click", async function () {
-            try {
-                await api("/api/devices/disconnect-all", { method: "POST" });
-                addLog("info", "全部设备断开请求已发送");
-                await refreshDevices();
-            } catch (e) {
-                addLog("error", "全部断开失败: " + e.message);
-            }
-        });
-    }
-});

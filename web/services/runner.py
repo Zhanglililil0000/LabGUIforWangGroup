@@ -524,15 +524,16 @@ class ExperimentRunner:
         """启动实验执行。
 
         操作流程：
-          1. 根据 flow.mode 选择要创建的设备子集
-          2. 为每个设备创建 MockDevice 实例（光谱仪额外传入 LightField 实验名称）
-          3. 用默认实验配置文件创建 ExperimentContext，注入设备池
+          1. 根据 flow.mode 选择要使用的设备子集
+          2. 从全局设备池获取已创建的设备实例（优先使用已连接的设备）
+          3. 创建 ExperimentContext，注入设备池
           4. 将 ExperimentFlow 构建为 Pipeline
-          5. 在守护线程中执行管道（线程随主进程退出而终止）
-
-        Args:
-            flow: 前端发来的实验流程定义
+          5. 发送 experiment_start 消息（含步骤列表）
+          6. 在守护线程中执行管道
         """
+        # 延迟导入，避免循环依赖 (web.services.runner ↔ web.api.devices)
+        from web.api.devices import _device_pool, _ensure_device_pool
+
         mode = flow.mode
 
         # ── 模式 → 设备映射 ──
@@ -542,29 +543,15 @@ class ExperimentRunner:
             ExperimentMode.CALIBRATION: ["spectrometer", "vis_rotator", "sfg_rotator", "raman_rotator",
                                          "power_meter", "distance_sensor", "vertical_stage", "delay_stage"],
         }
-        _LIGHTFIELD = {
-            ExperimentMode.SFG:         "HRBBSFGVS-PyLon",
-            ExperimentMode.SRS:         "FSRS-Blaze",
-            ExperimentMode.CALIBRATION: "HRBBSFGVS-PyLon",
-        }
 
         active_devices = _MODE_DEVICES.get(mode, _MODE_DEVICES[ExperimentMode.SFG])
-        lightfield_exp = _LIGHTFIELD.get(mode, "HRBBSFGVS-PyLon")
 
-        # ── 1. 创建 MockDevice 池 ──
-        device_configs = self.get_available_device_configs()
+        # ── 1. 确保设备池已初始化，并收集当前模式需要的设备 ──
+        _ensure_device_pool()
         devices = {}
-        for dev_name, dev_cfg in device_configs.items():
-            if dev_name not in active_devices:
-                continue
-            kwargs = {
-                "name": dev_name,
-                "device_type": dev_cfg.get("type", "unknown"),
-            }
-            # 光谱仪设备额外传入 LightField 实验名称
-            if dev_name == "spectrometer":
-                kwargs["lightfield_experiment"] = lightfield_exp
-            devices[dev_name] = MockDevice(**kwargs)
+        for dev_name in active_devices:
+            if dev_name in _device_pool:
+                devices[dev_name] = _device_pool[dev_name]
 
         # ── 2. 创建实验上下文 ──
         config = Config("configs/experiments/sfg_example.yaml")
@@ -575,10 +562,33 @@ class ExperimentRunner:
         self.ctx = ctx
         ctx.mode = flow.mode.value
 
+        # ── 2.5. 设置数据输出路径 ──
+        # 将前端传入的 base_path 写入光谱仪（LightField 文件保存目录）
+        # 同时更新 config，供 AcquireSpectrum 等操作读取
+        if flow.base_path:
+            if "spectrometer" in devices:
+                spec = devices["spectrometer"]
+                if hasattr(spec, "set_file_path"):
+                    spec.set_file_path(flow.base_path)
+            # 更新 config._data 中的 output.base_path
+            config._data.setdefault("output", {})["base_path"] = flow.base_path
+
         # ── 3. 构建管道 ──
         self.pipeline = self._build_pipeline(flow, ctx)
 
-        # ── 4. 启动守护线程 ──
+        # ── 4. 发送 experiment_start 消息 ──
+        steps_info = []
+        for op in self.pipeline.steps:
+            steps_info.append({
+                "name": op.name
+            })
+        self._send({
+            "type":        "experiment_start",
+            "steps":       steps_info,
+            "total_steps": len(steps_info),
+        })
+
+        # ── 5. 启动守护线程 ──
         def _run():
             try:
                 self.pipeline.run(ctx)

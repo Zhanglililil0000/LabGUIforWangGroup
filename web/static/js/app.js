@@ -80,8 +80,32 @@ function handleWSMessage(msg) {
         msg.current_step = msg.progress.current;
         msg.total_steps = msg.progress.total;
     }
+    // normalize: runner's flat field names → expected names
+    if (msg.index != null) {
+        msg.current_step = msg.index;
+        msg.step_index = msg.index;
+    }
+    if (msg.total != null) {
+        msg.total_steps = msg.total;
+    }
+    if (msg.name != null && msg.step_name == null) {
+        msg.step_name = msg.name;
+    }
 
     switch (msg.type) {
+        case "experiment_start":
+            state.experiment.running = true;
+            state.experiment.current_step = 0;
+            state.experiment.total_steps = msg.total_steps || 0;
+            state.experiment.elapsed = "0s";
+            if (typeof updateRunButtons === "function") updateRunButtons(true);
+            if (typeof updateStatusBar === "function") updateStatusBar();
+            if (typeof renderMonitorProgress === "function") renderMonitorProgress();
+            if (msg.steps && typeof renderMonitorSteps === "function") {
+                renderMonitorSteps({ steps: msg.steps });
+            }
+            break;
+
         case "step_start":
             state.experiment.running = true;
             state.experiment.current_step = msg.current_step || msg.step_index || 0;
@@ -126,8 +150,8 @@ function handleWSMessage(msg) {
 
         case "experiment_done":
             state.experiment.running = false;
-            state.experiment.total_steps = msg.steps_total || state.experiment.total_steps;
-            state.experiment.current_step = msg.steps_total || state.experiment.total_steps;
+            state.experiment.total_steps = msg.total_steps || msg.steps_total || state.experiment.total_steps;
+            state.experiment.current_step = msg.total_steps || msg.steps_total || state.experiment.total_steps;
             if (typeof renderMonitorProgress === "function") renderMonitorProgress();
             if (typeof renderMonitorSteps === "function") renderMonitorSteps({ steps: [] });
             if (typeof renderMonitorDone === "function") renderMonitorDone(msg);

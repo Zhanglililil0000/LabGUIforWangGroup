@@ -1,0 +1,44 @@
+name: SSP+PPP实验
+sample: test
+base_path: D:\SFGData
+mode: sfg
+groups:
+- name: 新采集组
+  options:
+    capture_background: false
+    stability_check: false
+    background_position: 100.0
+    signal_position: 222.5
+  steps:
+  - type: DelayStageMoveTo
+    params:
+      device: delay_stage
+      axis: X
+      position: 223.4
+  - type: MotorHome
+    params:
+      device: vis_rotator
+  - type: MotorHome
+    params:
+      device: sfg_rotator
+  - type: SetPolarization
+    params:
+      mode: ssp
+  - type: AcquireSpectrum
+    params:
+      name: sample
+      exposure_ms: 1000
+      frames: 1
+      compute_diff: false
+  - type: DelayStageMoveTo
+    params:
+      device: delay_stage
+      axis: X
+      position: 180
+  - type: AcquireSpectrum
+    params:
+      name: BG
+      exposure_ms: 1000
+      frames: 1
+      compute_diff: false
+template_name: TEST

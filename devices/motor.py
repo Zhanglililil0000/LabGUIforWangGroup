@@ -12,10 +12,9 @@ clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\Thorlabs.MotionControl.G
 clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\ThorLabs.MotionControl.IntegratedStepperMotorsCLI.dll")
 clr.AddReference("C:\\Program Files\\Thorlabs\\Kinesis\\ThorLabs.MotionControl.KCube.DCServoCLI.dll")
 
-from Thorlabs.MotionControl.DeviceManagerCLI import DeviceManagerCLI
+from Thorlabs.MotionControl.DeviceManagerCLI import DeviceManagerCLI, DeviceConfiguration
 from Thorlabs.MotionControl.IntegratedStepperMotorsCLI import CageRotator
 from Thorlabs.MotionControl.KCube.DCServoCLI import KCubeDCServo
-from Thorlabs.MotionControl.GenericMotorCLI import DeviceConfiguration
 
 from devices.base import DeviceBase, DeviceConnectionError, DeviceOperationError
 

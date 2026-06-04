@@ -525,7 +525,8 @@ async function loadTemplate(fname) {
             state.flow.groups = groups;
             if (data.name) state.flow.name = data.name;
             renderFlow();
-            addLog("info", "模板「" + data.name + "」已加载");
+            var templateDisplayName = data.template_name || data.name || fname;
+            addLog("info", "模板「" + templateDisplayName + "」已加载");
         };
 
         if (hasPlaceholder) {
