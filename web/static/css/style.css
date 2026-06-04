@@ -102,6 +102,22 @@ button:disabled { opacity:.45; cursor:not-allowed; }
     display:flex; flex-direction:column; gap:18px;
 }
 
+/* — flow config bar (sample name + save path) — */
+.flow-config-bar {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; margin-bottom:10px;
+    background:#f8f9fa; border:1px solid var(--border-color); border-radius:6px;
+    font-size:13px; flex-shrink:0;
+}
+.flow-config-label {
+    color:var(--text-secondary); white-space:nowrap; font-weight:600;
+}
+.flow-config-input {
+    padding:5px 8px; border:1px solid var(--border-color); border-radius:4px;
+    font-size:13px; background:#fff; width:120px;
+}
+.flow-config-input:focus { outline:none; border-color:var(--color-info); }
+
 /* — group box — */
 .flow-group {
     border:1px solid var(--border-color); border-radius:8px; overflow:hidden;

@@ -199,13 +199,24 @@ function renderFlow() {
     var container = document.getElementById("flow-container");
     if (!container) return;
 
+    // ── 流程配置栏（样品名称 + 保存路径） ──
+    var configHtml = '<div class="flow-config-bar">' +
+        '<label class="flow-config-label">样品名</label>' +
+        '<input type="text" class="flow-config-input" id="flow-sample" value="' + escHtml(state.flow.sample || "") + '"' +
+        ' onchange="state.flow.sample=this.value" placeholder="输入样品名" />' +
+        '<label class="flow-config-label">保存路径</label>' +
+        '<input type="text" class="flow-config-input" id="flow-basepath" value="' + escHtml(state.flow.base_path || "") + '"' +
+        ' onchange="state.flow.base_path=this.value" placeholder="D:\\SFGData" style="flex:1;" />' +
+        '</div>';
+
     if (!state.flow.groups.length) {
         container.innerHTML =
+            configHtml +
             '<div class="flow-empty">暂无采集组。<br>点击「添加采集组」开始构建实验流程。</div>';
         return;
     }
 
-    var html = "";
+    var html = configHtml;
 
     state.flow.groups.forEach(function (group, gi) {
         // ---------- group header ----------

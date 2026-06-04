@@ -347,7 +347,6 @@ function switchMode(modeId) {
     // 标定模式使用独立面板，SFG/SRS 使用步骤编辑器
     if (modeId === "calibration") {
         if (typeof initCalibrationPanel === "function") initCalibrationPanel();
-        // 隐藏 SFG/SRS 的运行按钮，用标定面板自己的按钮
         var btnRun = document.getElementById("btn-run");
         var btnPause = document.getElementById("btn-pause");
         var btnStop = document.getElementById("btn-stop");
@@ -362,6 +361,9 @@ function switchMode(modeId) {
         if (btnRun) btnRun.style.display = "";
         if (btnPause) btnPause.style.display = "";
         if (btnStop) btnStop.style.display = "";
+        // 更新编辑器标题
+        var title = document.getElementById("editor-title");
+        if (title && state.modes[modeId]) title.textContent = (state.modes[modeId].name || "实验流程");
         // 刷新模板列表（按模式过滤）
         if (typeof refreshTemplateList === "function") {
             refreshTemplateList();
