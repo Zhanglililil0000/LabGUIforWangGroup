@@ -1,0 +1,30 @@
+template_name: 默认模板
+mode: sfg
+name: SFG实验
+sample: '{sample}'
+base_path: D:\SFGData
+groups:
+- name: 初始化
+  steps:
+  - type: MotorHome
+    params:
+      device: vis_rotator
+  - type: MotorHome
+    params:
+      device: sfg_rotator
+  - type: SetWavelength
+    params:
+      wavelength_nm: 475
+  - type: SetExposure
+    params:
+      exposure_ms: 60000
+- name: SSP采集
+  steps:
+  - type: SetPolarization
+    params:
+      mode: ssp
+  - type: AcquireSpectrum
+    params:
+      name: '{sample}_ssp'
+      exposure_ms: 60000
+      frames: 1

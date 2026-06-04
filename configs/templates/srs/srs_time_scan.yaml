@@ -1,0 +1,61 @@
+template_name: SRS 时间扫描
+name: SRS 时间扫描
+mode: srs
+description: 延迟线扫描 + SRS采集。参考SRSTimeScan.py
+groups:
+- name: 初始化
+  steps:
+  - type: MotorHome
+    params:
+      device: raman_rotator
+  - type: DelayStageHome
+    params:
+      device: delay_stage
+      axis: X
+  - type: SetWavelength
+    params:
+      wavelength_nm: 630
+  - type: LogMessage
+    params:
+      message: 'SRS时间扫描开始: 延迟线 100~200, 步长5'
+      level: info
+- name: 延迟=100
+  steps:
+  - type: DelayStageMoveTo
+    params:
+      device: delay_stage
+      axis: X
+      position: 100
+  - type: Sleep
+    params:
+      seconds: 0.5
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_delay100
+      wavelength_nm: 630
+      frames: 10000
+      pump_pol: VV
+      exposure_ms: 1000
+- name: 延迟=105
+  steps:
+  - type: DelayStageMoveTo
+    params:
+      device: delay_stage
+      axis: X
+      position: 105
+  - type: Sleep
+    params:
+      seconds: 0.5
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_delay105
+      wavelength_nm: 630
+      frames: 10000
+      pump_pol: VV
+      exposure_ms: 1000
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: SRS时间扫描完成
+      level: info

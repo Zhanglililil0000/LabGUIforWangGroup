@@ -1,0 +1,59 @@
+template_name: VIS 偏振标定
+name: VIS 偏振标定 (功率扫描)
+mode: calibration
+description: 旋转VIS偏振片 20°~130°，每度读取功率计。参考 ThorlabsPowerScan.py
+groups:
+- name: 初始化
+  steps:
+  - type: MotorHome
+    params:
+      device: vis_rotator
+  - type: Sleep
+    params:
+      seconds: 2.0
+  - type: LogMessage
+    params:
+      message: 'VIS偏振标定开始: 将旋转到20°并逐步扫描至130°'
+      level: info
+- name: 扫描起点 20°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: vis_rotator
+      position: 20
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadPower
+    params:
+      wavelength_nm: 532.0
+- name: 扫描中点 75°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: vis_rotator
+      position: 75
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadPower
+    params:
+      wavelength_nm: 532.0
+- name: 扫描终点 130°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: vis_rotator
+      position: 130
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadPower
+    params:
+      wavelength_nm: 532.0
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: VIS偏振标定扫描完成。实际实验中应以1°步长扫描20°~130°全范围。
+      level: info

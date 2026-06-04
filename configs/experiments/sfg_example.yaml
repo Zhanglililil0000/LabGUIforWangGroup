@@ -1,0 +1,35 @@
+# SFG 实验示例配置 - Methanol 样品
+# 使用方法: config = Config("configs/experiments/sfg_example.yaml")
+
+extends: "../defaults.yaml"
+
+experiment:
+  type: "sfg"
+  name: "SFG_Example"
+
+output:
+  base_path: "D:\\SFGData\\example"
+  sample_name: "methanol"
+
+spectrometer:
+  experiment_name: "HRBBSFGVS-PyLon"
+  center_wavelength_nm: 475
+  exposure_ms: 60000
+
+polarization:
+  vis_angle_s: 45.58
+  vis_angle_p: 90.58
+  sfg_angle_s: 29.21
+  sfg_angle_p: 74.21
+  sequence: ["ssp", "ppp"]
+
+delay_stage:
+  signal_position: 222.5
+  background_position: 100.0
+
+# 可选: 扫描参数
+# scan:
+#   type: "time"
+#   delay_start: 135.0
+#   delay_end: 161.0
+#   delay_step: 0.5

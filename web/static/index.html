@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFG/SRS 实验控制台</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 工具栏 -->
+    <div id="toolbar">
+        <div id="toolbar-left">
+            <button id="btn-save-template">💾 保存模板</button>
+            <select id="select-template"><option value="">-- 选择模板 --</option></select>
+            <button id="btn-delete-template">🗑 删除</button>
+        </div>
+        <div id="toolbar-center">
+            <button id="btn-run" class="btn-action btn-primary">▶ 运行</button>
+            <button id="btn-pause" class="btn-action" disabled>⏸ 暂停</button>
+            <button id="btn-stop" class="btn-action btn-danger" disabled>■ 停止</button>
+        </div>
+        <div id="toolbar-right"></div>
+    </div>
+
+    <!-- 模式切换标签 -->
+    <div id="mode-bar">
+        <button class="mode-tab active" data-mode="sfg">SFG 实验</button>
+        <button class="mode-tab" data-mode="srs">SRS 实验</button>
+        <button class="mode-tab" data-mode="calibration">系统调试</button>
+        <span id="mode-info" class="mode-info">和频振动光谱 — VIS/SFG 偏振 + 延迟线 + 光谱仪</span>
+    </div>
+
+    <!-- 主内容区: 三栏 -->
+    <div id="main">
+        <!-- 左: 设备面板 -->
+        <div id="panel-devices" class="panel">
+            <h3>设备状态</h3>
+            <div id="device-list"></div>
+            <div id="device-actions">
+                <button id="btn-connect-all">全部连接</button>
+                <button id="btn-disconnect-all">全部断开</button>
+            </div>
+        </div>
+
+        <!-- 中: 流程编辑器 (SFG/SRS) + 标定面板 (系统调试) -->
+        <div id="panel-editor" class="panel">
+            <h3 id="editor-title">实验流程</h3>
+            <div id="flow-container"></div>
+            <div id="editor-actions">
+                <button id="btn-add-group">+ 添加采集组</button>
+            </div>
+
+            <!-- 标定面板 (仅系统调试模式) -->
+            <div id="calibration-panel" style="display:none;">
+                <div id="cal-form" class="cal-form"></div>
+                <div id="cal-estimate" class="cal-estimate">预计扫描 ?? 个点</div>
+                <div class="cal-buttons">
+                    <button id="btn-cal-start" class="btn-primary">▶ 开始扫描</button>
+                    <button id="btn-cal-stop" class="btn-danger" disabled>■ 停止</button>
+                </div>
+                <div id="cal-result" class="cal-result">
+                    <div class="cal-empty">运行扫描后在此显示结果图表和数据</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右: 运行状态 -->
+        <div id="panel-monitor" class="panel">
+            <h3>运行状态</h3>
+            <div id="monitor-progress"></div>
+            <div id="monitor-steps"></div>
+            <div id="monitor-logs"></div>
+        </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div id="statusbar">
+        <span id="status-indicator">● 就绪</span>
+        <span id="status-time">预计耗时: —</span>
+    </div>
+
+    <!-- 模态对话框容器 -->
+    <div id="modal-overlay" class="hidden"></div>
+    <div id="modal-box" class="hidden"></div>
+
+    <script src="js/app.js?v=20260603"></script>
+    <script src="js/devices.js?v=20260603"></script>
+    <script src="js/editor.js?v=20260603"></script>
+    <script src="js/calibration.js?v=20260603"></script>
+    <script src="js/monitor.js?v=20260603"></script>
+</body>
+</html>

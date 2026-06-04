@@ -1,0 +1,28 @@
+# ============================================================
+# MultimodalHRSystem - Python 依赖
+# ============================================================
+# 安装方式:
+#   pip install -r requirements.txt
+# ============================================================
+
+# ---- Web 框架 (Web GUI) ----
+fastapi>=0.95
+uvicorn>=0.22
+websockets>=10.0
+python-multipart>=0.0.5
+
+# ---- 数据模型和配置 ----
+pydantic>=2.0
+pyyaml>=6.0
+
+# ---- 科学计算 ----
+numpy>=1.21
+matplotlib>=3.5
+
+# ---- 硬件通信 ----
+pyserial>=3.5
+pythonnet>=3.0
+
+# ---- Andor 相机 (需先安装 Andor SDK，手动 pip install) ----
+# pyAndorSpectrograph
+# pyAndorSDK2

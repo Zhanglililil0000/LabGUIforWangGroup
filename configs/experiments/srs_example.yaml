@@ -1,0 +1,28 @@
+# SRS 实验示例配置
+extends: "../defaults.yaml"
+
+experiment:
+  type: "srs"
+  name: "SRS_Example"
+
+output:
+  base_path: "D:\\SRSData\\example"
+  sample_name: "cyclohexane"
+
+spectrometer:
+  experiment_name: "FSRS-Blaze"
+  center_wavelength_nm: 630
+  exposure_ms: 1000
+  frames: 10000
+
+polarization:
+  rotator_angle_v: 42.47
+  rotator_angle_h: 87.47
+  sequence: ["vv", "vh"]
+
+# 可选: 波长扫描
+# scan:
+#   type: "wavelength"
+#   start_nm: 450
+#   end_nm: 510
+#   step_nm: 10

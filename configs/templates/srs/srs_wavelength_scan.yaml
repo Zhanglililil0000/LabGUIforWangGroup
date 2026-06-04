@@ -1,0 +1,88 @@
+template_name: SRS 波长扫描
+name: SRS 波长扫描 (Stokes区)
+mode: srs
+description: Stokes区域波长扫描(>532nm)。参考SRSWavelengthScan.py。Anti-Stokes区域(<532nm)需手动更换filter
+groups:
+- name: 初始化 VV偏振
+  steps:
+  - type: MotorHome
+    params:
+      device: raman_rotator
+  - type: Sleep
+    params:
+      seconds: 2.0
+  - type: MotorMoveTo
+    params:
+      device: raman_rotator
+      position: 42.47
+  - type: LogMessage
+    params:
+      message: 'SRS波长扫描开始: Stokes区域(>532nm)，Pump偏振VV，步长10nm'
+      level: info
+- name: VV 540nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_540nm
+      wavelength_nm: 540
+      frames: 50000
+      pump_pol: VV
+- name: VV 550nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_550nm
+      wavelength_nm: 550
+      frames: 50000
+      pump_pol: VV
+- name: VV 560nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_560nm
+      wavelength_nm: 560
+      frames: 50000
+      pump_pol: VV
+- name: 切换 VH偏振
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: raman_rotator
+      position: 87.47
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: LogMessage
+    params:
+      message: 切换至Pump偏振VH (87.47°)
+      level: info
+- name: VH 540nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VH_540nm
+      wavelength_nm: 540
+      frames: 50000
+      pump_pol: VH
+- name: VH 550nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VH_550nm
+      wavelength_nm: 550
+      frames: 50000
+      pump_pol: VH
+- name: VH 560nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VH_560nm
+      wavelength_nm: 560
+      frames: 50000
+      pump_pol: VH
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: SRS波长扫描完成。实际实验应以10nm步长扫描全范围，并注意Stokes/Anti-Stokes区域需更换filter
+      level: info

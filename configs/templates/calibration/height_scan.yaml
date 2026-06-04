@@ -1,0 +1,101 @@
+template_name: 高度扫描
+name: 高度扫描 (样品对焦)
+mode: calibration
+description: 使用距离传感器和垂直位移台扫描样品高度 400~1500。参考 HeightScan.py
+groups:
+- name: 初始化
+  steps:
+  - type: SetWavelength
+    params:
+      wavelength_nm: 475
+  - type: SetExposure
+    params:
+      exposure_ms: 1000
+  - type: ReadDistance
+    params: {}
+  - type: LogMessage
+    params:
+      message: '高度扫描开始: 从400逐步扫描至1500，步长10'
+      level: info
+- name: 高度 500
+  steps:
+  - type: ReadDistance
+    params: {}
+  - type: VerticalStageMove
+    params:
+      device: vertical_stage
+      axis: 1
+      position: 500
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadDistance
+    params: {}
+  - type: AcquireSpectrum
+    params:
+      name: height_500
+      exposure_ms: 1000
+      frames: 1
+- name: 高度 800
+  steps:
+  - type: ReadDistance
+    params: {}
+  - type: VerticalStageMove
+    params:
+      device: vertical_stage
+      axis: 1
+      position: 800
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadDistance
+    params: {}
+  - type: AcquireSpectrum
+    params:
+      name: height_800
+      exposure_ms: 1000
+      frames: 1
+- name: 高度 1000
+  steps:
+  - type: ReadDistance
+    params: {}
+  - type: VerticalStageMove
+    params:
+      device: vertical_stage
+      axis: 1
+      position: 1000
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadDistance
+    params: {}
+  - type: AcquireSpectrum
+    params:
+      name: height_1000
+      exposure_ms: 1000
+      frames: 1
+- name: 高度 1200
+  steps:
+  - type: ReadDistance
+    params: {}
+  - type: VerticalStageMove
+    params:
+      device: vertical_stage
+      axis: 1
+      position: 1200
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: ReadDistance
+    params: {}
+  - type: AcquireSpectrum
+    params:
+      name: height_1200
+      exposure_ms: 1000
+      frames: 1
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: 高度扫描完成。实际实验中应以步长10扫描400~1500全范围。
+      level: info

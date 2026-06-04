@@ -1,0 +1,59 @@
+template_name: SRS 偏振扫描
+name: SRS 偏振扫描 (VV/VH)
+mode: srs
+description: Pump偏振扫描：VV(垂直)和VH(水平)两种偏振组合。参考SRSPolScan.py
+groups:
+- name: 初始化 VV偏振
+  steps:
+  - type: MotorHome
+    params:
+      device: raman_rotator
+  - type: Sleep
+    params:
+      seconds: 2.0
+  - type: MotorMoveTo
+    params:
+      device: raman_rotator
+      position: 42.47
+  - type: SetWavelength
+    params:
+      wavelength_nm: 630
+  - type: LogMessage
+    params:
+      message: 'SRS偏振扫描开始: Pump偏振VV (42.47°)，Probe偏振固定'
+      level: info
+- name: VV偏振 630nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VV_630nm
+      wavelength_nm: 630
+      frames: 10000
+      pump_pol: VV
+- name: 切换 VH偏振
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: raman_rotator
+      position: 87.47
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: LogMessage
+    params:
+      message: 切换至Pump偏振VH (87.47°)
+      level: info
+- name: VH偏振 630nm
+  steps:
+  - type: AcquireSRSSpectrum
+    params:
+      name: SRS_VH_630nm
+      wavelength_nm: 630
+      frames: 10000
+      pump_pol: VH
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: 'SRS偏振扫描完成。输出文件: _ret.csv (差分信号), _ret1.csv (偶/奇), _ret2.csv (奇/偶)'
+      level: info

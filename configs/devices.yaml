@@ -1,0 +1,54 @@
+# 设备连接参数
+# 此文件包含所有设备（无论是否在当前实验中使用）
+# 修改端口/序列号后所有实验配置自动生效
+
+devices:
+  vis_rotator:
+    type: "thorlabs_rotator"
+    driver: "Cage"
+    serial: "55358884"
+
+  sfg_rotator:
+    type: "thorlabs_rotator"
+    driver: "Cage"
+    serial: "55355234"
+
+  raman_rotator:
+    type: "thorlabs_rotator"
+    driver: "Cage"
+    serial: "55169544"
+
+  delay_stage:
+    type: "delay_stage"
+    port: "COM4"
+    baud: 19200
+    controller: "SMC"
+    slave: 204  # 0xCC
+    limit_isnegative: true
+    axis: "X"
+
+  spectrometer:
+    type: "lightfield"
+    experiment_name: "HRBBSFGVS-PyLon"
+
+  power_meter:
+    type: "thorlabs_tlpm"
+    wavelength_nm: 532.0
+
+  distance_sensor:
+    type: "keyence_cl3"
+    device_id: 0
+    timeout: 10000
+
+  vertical_stage:
+    type: "vertical_stage"
+    port: "COM9"
+    baud: 9600
+
+  daq_card:
+    type: "smacq_ai"
+    device_id: 0
+    timeout: 1000
+    range_val: 5.0
+    sample_rate: 1000
+    channels: 1

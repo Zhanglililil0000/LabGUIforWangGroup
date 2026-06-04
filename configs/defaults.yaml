@@ -1,0 +1,83 @@
+# CommandMode 全局默认配置
+# 所有实验配置继承此文件
+
+output:
+  base_path: "D:\\SFGData"
+  sample_name: "sample"
+  auto_increment: false
+
+logging:
+  level: "INFO"
+  file: ""
+
+# ─── 实验模式定义 ───
+# 每种模式指定了使用的 LightField 实验预设和设备列表
+modes:
+  sfg:
+    name: "SFG 实验"
+    description: "和频振动光谱 — 控制 VIS/SFG 偏振 + 延迟线 + 光谱仪"
+    lightfield_experiment: "HRBBSFGVS-PyLon"
+    wavelength_nm: 475
+    exposure_ms: 60000
+    frames: 1
+    devices:
+      - spectrometer
+      - vis_rotator
+      - sfg_rotator
+      - delay_stage
+    step_types:
+      - MotorHome
+      - MotorMoveTo
+      - DelayStageHome
+      - DelayStageMoveTo
+      - SetExposure
+      - SetWavelength
+      - SetGrating
+      - AcquireSpectrum
+      - SetPolarization
+      - Sleep
+      - LogMessage
+
+  srs:
+    name: "SRS 实验"
+    description: "受激拉曼散射 — Pump(532nm)偏振VV/VH + 波长扫描 + 多帧差分"
+    lightfield_experiment: "FSRS-Blaze"
+    wavelength_nm: 630
+    exposure_ms: 1000
+    frames: 10000
+    devices:
+      - spectrometer
+      - raman_rotator
+      - delay_stage
+    step_types:
+      - MotorHome
+      - MotorMoveTo
+      - DelayStageHome
+      - DelayStageMoveTo
+      - SetExposure
+      - SetWavelength
+      - SetGrating
+      - AcquireSpectrum
+      - AcquireSRSSpectrum
+      - Sleep
+      - LogMessage
+
+  calibration:
+    name: "系统调试"
+    description: "VIS偏振标定 / SFG偏振标定 / 高度扫描 — 扫描参数设置 + 实时图表"
+    lightfield_experiment: "HRBBSFGVS-PyLon"
+    wavelength_nm: 475
+    exposure_ms: 60000
+    frames: 1
+    devices:
+      - spectrometer
+      - vis_rotator
+      - sfg_rotator
+      - raman_rotator
+      - power_meter
+      - distance_sensor
+      - vertical_stage
+      - delay_stage
+    step_types: []
+
+

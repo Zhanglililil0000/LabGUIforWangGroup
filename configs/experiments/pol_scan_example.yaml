@@ -1,0 +1,37 @@
+# 偏振扫描实验配置
+# 扫描 VIS 或 SFG 旋转电机角度，采集各角度下的光谱
+extends: "../defaults.yaml"
+
+experiment:
+  type: "pol_scan"
+  name: "PolarizationScan"
+
+output:
+  base_path: "D:\\SFGData\\pol_scan"
+  sample_name: "gold"
+
+spectrometer:
+  experiment_name: "HRBBSFGVS-PyLon"
+  center_wavelength_nm: 475
+  exposure_ms: 60000          # 单帧曝光时间 (ms)
+  frames: 1                    # 每角度采集帧数
+
+# ─── 偏振基础角度（每个实验位置需校准）───
+polarization:
+  vis_angle_s: 45.58          # VIS S 偏振角度
+  vis_angle_p: 90.58          # VIS P 偏振角度
+  sfg_angle_s: 29.01          # SFG S 偏振角度
+  sfg_angle_p: 74.01          # SFG P 偏振角度
+
+# ─── 扫描参数 ───
+scan:
+  scan_device: "sfg_rotator"  # 扫描哪个电机: vis_rotator 或 sfg_rotator
+  start_angle: 10.0           # 起始角度 (deg)
+  end_angle: 110.0            # 结束角度 (deg)
+  step: 1.0                   # 步长 (deg)
+  fixed_device: "vis_rotator" # 固定电机
+  fixed_angle_key: "vis_angle_p"  # 固定电机的角度 (P/S 偏振角)
+
+# 延迟线（如果实验需要）
+delay_stage:
+  signal_position: 153.0      # 信号位置

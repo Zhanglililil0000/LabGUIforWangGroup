@@ -1,0 +1,109 @@
+template_name: SFG 偏振标定
+name: SFG 偏振标定 (光谱扫描)
+mode: calibration
+description: VIS固定P偏振(90.58°)，SFG旋转台 10°~110° 采集光谱。参考 SFGPolScan.py
+groups:
+- name: 初始化
+  steps:
+  - type: MotorHome
+    params:
+      device: sfg_rotator
+  - type: MotorHome
+    params:
+      device: vis_rotator
+  - type: Sleep
+    params:
+      seconds: 2.0
+  - type: MotorMoveTo
+    params:
+      device: vis_rotator
+      position: 90.58
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: SetWavelength
+    params:
+      wavelength_nm: 475
+  - type: SetExposure
+    params:
+      exposure_ms: 60000
+  - type: LogMessage
+    params:
+      message: 'SFG偏振标定开始: VIS固定90.58°(P偏振)，SFG从10°扫描至110°'
+      level: info
+- name: SFG 10°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: sfg_rotator
+      position: 10
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: AcquireSpectrum
+    params:
+      name: sfg_pol_10
+      exposure_ms: 60000
+      frames: 1
+- name: SFG 45°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: sfg_rotator
+      position: 45
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: AcquireSpectrum
+    params:
+      name: sfg_pol_45
+      exposure_ms: 60000
+      frames: 1
+- name: SFG 74° (S偏振)
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: sfg_rotator
+      position: 74
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: AcquireSpectrum
+    params:
+      name: sfg_pol_74
+      exposure_ms: 60000
+      frames: 1
+- name: SFG 90°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: sfg_rotator
+      position: 90
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: AcquireSpectrum
+    params:
+      name: sfg_pol_90
+      exposure_ms: 60000
+      frames: 1
+- name: SFG 110°
+  steps:
+  - type: MotorMoveTo
+    params:
+      device: sfg_rotator
+      position: 110
+  - type: Sleep
+    params:
+      seconds: 1.0
+  - type: AcquireSpectrum
+    params:
+      name: sfg_pol_110
+      exposure_ms: 60000
+      frames: 1
+- name: 完成
+  steps:
+  - type: LogMessage
+    params:
+      message: SFG偏振标定扫描完成。实际实验中应以1°步长扫描10°~110°全范围。
+      level: info
